@@ -1,51 +1,50 @@
 #include <stdio.h>
+#include <conio.h>
 
 #include "duck.h"
-
-void print_tree(DirTreeNode *tree, int level)
-{
-    if(tree == NULL)
-        return;
-
-    int indent = level * 2;
-    printf("%*s%-*s %50d\n", indent, "", 20 - indent, tree->name, tree->size);
-
-    for(int i = 0; i < tree->files; i++)
-        print_tree(tree->children[i], level + 1);
-}
-
-int comparator(const void *a, const void *b)
-{
-    DirTreeNode *aa = *((DirTreeNode**)a);
-    DirTreeNode *bb = *((DirTreeNode**)b);
-
-    return bb->size - aa->size;
-}
-
-void sort_tree(DirTreeNode *tree)
-{
-    if(tree == NULL)
-        return;
-    
-    qsort(tree->children, tree->files, sizeof(DirTreeNode*), &comparator);
-
-    for(int i = 0; i < tree->files; i++)
-        sort_tree(tree->children[i]);
-}
+#include "tui.h"
 
 int main()
 {
-    // printf("Hello world!\n");
-
-    DirTreeNode *root = create_dir_tree_node(".");
+    dirtree *root = dirtree_create(".");
 
     int res = dir_walk(".", root);
     
-    //sort_tree(root);
-    print_tree(root, 0);
+    dirtree_sort(root, &comparator_size);
 
-    printf("%d\n", res);
+    init();
+    dirtree_print(root);
 
+    int redraw = 0;
+    while(1)
+    {
+        int key = getch();
+
+        if(key == 80)
+        {
+            if(root->selected_child < root->nfiles - 1)
+            {
+                root->selected_child++;
+                redraw = 1;
+            }
+        }
+
+        if(key == 72)
+        {
+            if(root->selected_child > 0)
+            {
+                root->selected_child--;
+                redraw = 1;
+            }
+        }
+
+        if(redraw)
+        {
+            clear();
+            dirtree_print(root);
+            redraw = 0;
+        }
+    }
 
 
     return 0;
