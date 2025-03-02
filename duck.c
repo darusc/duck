@@ -3,19 +3,21 @@
 #include <windows.h>
 #include <stdio.h>
 
-dirtree *dirtree_create(const char *name)
+dirtree *dirtree_create(const char *name, enum filetype type, dirtree *parent)
 {
     dirtree *node = calloc(1, sizeof(dirtree));
 
     strcpy(node->desc.name, name);
     node->desc.length = strlen(name);
-    node->selected_child = 0;
+    node->desc.type = type;
+    node->selected_file = 0;
 
     node->nfiles = 0;
     node->size = 0;
 
     node->capacity = 20;
     node->files = NULL;
+    node->parent = parent;
 }
 
 void dirtree_insert(dirtree *root, dirtree* node)
@@ -63,12 +65,14 @@ int dir_walk(const char *dir, dirtree *tree)
         if(strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
             continue;
 
-        dirtree *n = dirtree_create(find_data.cFileName);
+        int isDirectory = find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+
+        dirtree *n = dirtree_create(find_data.cFileName, isDirectory ? DDIRECTORY : DFILE, tree);
         n->size = find_data.nFileSizeLow;
 
         sprintf(path, "%s\\%s", dir, find_data.cFileName);
         
-        if(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        if(isDirectory)
             n->size = dir_walk(path, n);
 
         dirtree_insert(tree, n);

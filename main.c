@@ -6,7 +6,7 @@
 
 int main()
 {
-    dirtree *root = dirtree_create(".");
+    dirtree *root = dirtree_create(".", DDIRECTORY, NULL);
 
     int res = dir_walk(".", root);
     
@@ -22,25 +22,43 @@ int main()
 
         if(key == 80)
         {
-            if(root->selected_child < root->nfiles - 1)
+            if(root->selected_file < root->nfiles - 1)
             {
-                root->selected_child++;
-                redraw = 1;
+                root->selected_file++;
+                redraw = CLEAR_NO_CLS;
             }
         }
 
         if(key == 72)
         {
-            if(root->selected_child > 0)
+            if(root->selected_file > 0)
             {
-                root->selected_child--;
-                redraw = 1;
+                root->selected_file--;
+                redraw = CLEAR_NO_CLS;
+            }
+        }
+
+        if(key == 13)
+        {
+            if(root->files[root->selected_file]->desc.type == DDIRECTORY)
+            {
+                root = root->files[root->selected_file];
+                redraw = CLEAR_CLS;
+            }
+        }
+
+        if(key == 8)
+        {
+            if(root->parent != NULL)
+            {
+                root = root->parent;
+                redraw = CLEAR_CLS;
             }
         }
 
         if(redraw)
         {
-            clear();
+            clear(redraw);
             dirtree_print(root);
             redraw = 0;
         }

@@ -35,7 +35,7 @@ void dirtree_print(dirtree *tree)
         dirtree *d = tree->files[i];
 
         COORD coord = {0, (short)i};
-        if(i == tree->selected_child)
+        if(i == tree->selected_file)
         {
             WriteConsoleOutputAttribute(hConsole, colorAttributes, d->desc.length, coord, &bytes);
         }
@@ -44,11 +44,18 @@ void dirtree_print(dirtree *tree)
     }
 }
 
-void clear()
+void clear(int cls)
 {
-    DWORD bytes;
-    COORD coord = {0, 0};
-    FillConsoleOutputAttribute(hConsole, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
+    if(cls == CLEAR_CLS)
+    {
+        system("cls");
+    }
+    else 
+    {
+        DWORD bytes;
+        COORD coord = {0, 0};
+        FillConsoleOutputAttribute(hConsole, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
+    }
 }
 
 #endif

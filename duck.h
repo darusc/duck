@@ -6,8 +6,8 @@
 
 enum filetype
 {
-    File,
-    Directory
+    DFILE,
+    DDIRECTORY
 };
 
 typedef struct dirtree_desc
@@ -20,17 +20,18 @@ typedef struct dirtree_desc
 typedef struct dirtree
 {
     struct dirtree_desc desc;
-    uint32_t selected_child;
+    uint32_t selected_file;
 
     uint32_t size;
     uint32_t nfiles;
 
     uint32_t capacity;
     struct dirtree **files;
+    struct dirtree *parent;
 } dirtree;
 
 
-dirtree* dirtree_create(const char* name);
+dirtree* dirtree_create(const char* name, enum filetype type, dirtree *parent);
 
 void dirtree_insert(dirtree *root, dirtree* node);
 void dirtree_sort(dirtree *root, int (*comparator)(const void*, const void*));
