@@ -10,10 +10,13 @@
  * Size set to MAX_PATH (260) - the maximum size of a file/directory name is 260 characters on WIN32 systems
  */ 
 static WORD colorAttributes[MAX_PATH];
+
 static HANDLE hConsole;
 static CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-void init()
+static duioptions options;
+
+void dui_init(duioptions doptions)
 {
     // Initialize the color attributes
     for(int i = 0; i < MAX_PATH; i++)
@@ -21,9 +24,14 @@ void init()
 
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(hConsole, &csbi);
+
+    options = doptions;
+
+    if(options.fullscreen)
+        system("cls");
 }
 
-void dirtree_print(dirtree *tree)
+void dui_print(dirtree *tree)
 {
     if(tree == NULL)
         return;
@@ -35,6 +43,9 @@ void dirtree_print(dirtree *tree)
         dirtree *d = tree->files[i];
 
         COORD coord = {0, (short)i};
+        if(!options.fullscreen)
+            coord.Y += csbi.dwCursorPosition.Y;
+        
         if(i == tree->selected_file)
         {
             WriteConsoleOutputAttribute(hConsole, colorAttributes, d->desc.length, coord, &bytes);
@@ -44,19 +55,23 @@ void dirtree_print(dirtree *tree)
     }
 }
 
-void clear(int cls)
+void dui_clear(int mode)
 {
-    if(cls == CLEAR_CLS)
+    COORD coord = {0, 0};
+    DWORD bytes;
+
+    if(!options.fullscreen)
+        coord.Y = csbi.dwCursorPosition.Y;
+
+    if(mode == CLEAR_ALL)
     {
-        system("cls");
+        FillConsoleOutputCharacter(hConsole, TEXT(' '), csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
+        FillConsoleOutputAttribute(hConsole, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
     }
-    else 
+    else if(mode == CLEAR_ATTRIBUTES)
     {
-        DWORD bytes;
-        COORD coord = {0, 0};
         FillConsoleOutputAttribute(hConsole, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
     }
 }
 
 #endif
-

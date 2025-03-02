@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <stdio.h>
 
-dirtree *dirtree_create(const char *name, enum filetype type, dirtree *parent)
+dirtree *dirtree_alloc(const char *name, enum filetype type, dirtree *parent)
 {
     dirtree *node = calloc(1, sizeof(dirtree));
 
@@ -48,9 +48,85 @@ void dirtree_sort(dirtree *root, int (*comparator)(const void*, const void*))
         dirtree_sort(root->files[i], comparator);
 }
 
-int dir_walk(const char *dir, dirtree *tree)
-{
 
+int dirtree_down(dirtree **root)
+{
+    if((*root)->files[(*root)->selected_file]->desc.type == DDIRECTORY)
+    {
+        *root = (*root)->files[(*root)->selected_file];
+        return 1;
+    }
+
+    return 0;
+}
+
+int dirtree_up(dirtree **root)
+{
+    if((*root)->parent != NULL)
+    {
+        *root = (*root)->parent;
+        return 1;
+    }
+
+    return 0;
+}
+
+
+int dirtree_select_next_file(dirtree *root)
+{
+    if(root->selected_file < root->nfiles - 1)
+    {
+        root->selected_file++;
+        return 1;
+    }
+
+    return 0;
+}
+
+int dirtree_select_prev_file(dirtree *root)
+{
+    if(root->selected_file > 0)
+    {
+        root->selected_file--;
+        return 1;
+    }
+
+    return 0;
+}
+
+
+int dirtree_comp_size(const void *a, const void *b)
+{
+    dirtree *aa = *((dirtree**)a);
+    dirtree *bb = *((dirtree**)b);
+
+    return bb->size - aa->size;
+}
+
+int dirtree_comp_alpha(const void *a, const void *b)
+{
+    dirtree *aa = *((dirtree**)a);
+    dirtree *bb = *((dirtree**)b);
+
+    return strcmp(aa->desc.name, bb->desc.name);
+}
+
+int dirtree_comp_items(const void *a, const void *b)
+{
+    dirtree *aa = *((dirtree**)a);
+    dirtree *bb = *((dirtree**)b);
+
+    return aa->files - bb->files;
+}
+
+
+
+/**
+ * Walk the given directory and builds the resulted tree.
+ * Returns the size of the directory.
+ */
+int dir_walk(const char *dir, dirtree *tree, int all)
+{
     WIN32_FIND_DATA find_data;
     HANDLE hFind = NULL;
 
@@ -62,19 +138,25 @@ int dir_walk(const char *dir, dirtree *tree)
 
     do
     {
+        // Skip if the current director is . or ..
         if(strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
+            continue;
+
+        // Skip if the file / directory is hiiden and all flag is not set
+        if(!all && find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
             continue;
 
         int isDirectory = find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 
-        dirtree *n = dirtree_create(find_data.cFileName, isDirectory ? DDIRECTORY : DFILE, tree);
+        dirtree *n = dirtree_alloc(find_data.cFileName, isDirectory ? DDIRECTORY : DFILE, tree);
         n->size = find_data.nFileSizeLow;
 
         sprintf(path, "%s\\%s", dir, find_data.cFileName);
         
+        // If the file is a directory recurse on it
         if(isDirectory)
-            n->size = dir_walk(path, n);
-
+            n->size = dir_walk(path, n, all);
+            
         dirtree_insert(tree, n);
 
     } while (FindNextFile(hFind, &find_data));
@@ -84,10 +166,22 @@ int dir_walk(const char *dir, dirtree *tree)
     return tree->size;
 }
 
-int comparator_size(const void *a, const void *b)
+void build_dirtree(dirtree *tree, const char *path, duckoptions options)
 {
-    dirtree *aa = *((dirtree**)a);
-    dirtree *bb = *((dirtree**)b);
+    dir_walk(path, tree, options.all);
 
-    return bb->size - aa->size;
+    switch(options.sort)
+    {
+        case DSIZE:
+            dirtree_sort(tree, &dirtree_comp_size);
+            break;
+    
+        case DALPHABETIC:
+            dirtree_sort(tree, &dirtree_comp_alpha);
+            break;
+
+        case DITEMS:
+            dirtree_sort(tree, &dirtree_comp_items);
+            break;
+    }
 }

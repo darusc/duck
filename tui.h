@@ -3,12 +3,28 @@
 
 #include "duck.h"
 
-#define CLEAR_CLS 1
-#define CLEAR_NO_CLS 2
+#define CLEAR_ALL 1
+#define CLEAR_ATTRIBUTES 2
 
-void init();
+typedef struct duioptions 
+{
+    /**
+     * Intercative mode.
+     * (enabled) Displays only the direct children of a directory and allows navigation
+     * (disabled) Displays all files in a tree like structure
+     */
+    int interactive;
 
-void dirtree_print(dirtree *tree);
-void clear();
+    /**
+     * Fullscreen mode
+     * (enabled) Clears the terminal before printing
+     * (disabled) Doesn't clear the terminal, the output is printed normally
+     */
+    int fullscreen;
+} duioptions;
+
+void dui_init(duioptions options);
+void dui_print(dirtree *tree);
+void dui_clear(int mode);
 
 #endif
