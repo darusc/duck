@@ -4,27 +4,44 @@
 #include <stdint.h>
 #include <windows.h>
 
-enum Filetype
+enum filetype
 {
     File,
     Directory
 };
 
-typedef struct DirTreeNode
+typedef struct dirtree_desc
 {
+    enum filetype type;
     char name[MAX_PATH];
-    enum Filetype type;
+    uint8_t length;
+} dirtree_desc;
+
+typedef struct dirtree
+{
+    struct dirtree_desc desc;
+    uint32_t selected_child;
 
     uint32_t size;
-    uint32_t files;
+    uint32_t nfiles;
 
     uint32_t capacity;
-    struct DirTreeNode **children;
-} DirTreeNode;
+    struct dirtree **files;
+} dirtree;
 
-DirTreeNode* create_dir_tree_node(const char* name);
-void dir_tree_insert(DirTreeNode *root, DirTreeNode* node);
 
-int dir_walk(const char *dir, DirTreeNode *tree);
+dirtree* dirtree_create(const char* name);
+
+void dirtree_insert(dirtree *root, dirtree* node);
+void dirtree_sort(dirtree *root, int (*comparator)(const void*, const void*));
+
+/**
+ * Walk the given directory and builds the resulted tree.
+ * Returns the size of the directory.
+ */
+int dir_walk(const char *dir, dirtree *tree);
+
+int comparator_size(const void *a, const void *b);
+// int comparator_alpha(const void *a, const void *b);
 
 #endif

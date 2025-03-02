@@ -3,34 +3,50 @@
 #include <windows.h>
 #include <stdio.h>
 
-DirTreeNode *create_dir_tree_node(const char *name)
+dirtree *dirtree_create(const char *name)
 {
-    DirTreeNode *node = calloc(1, sizeof(DirTreeNode));
-    strcpy(node->name, name);
-    node->files = 0;
+    dirtree *node = calloc(1, sizeof(dirtree));
+
+    strcpy(node->desc.name, name);
+    node->desc.length = strlen(name);
+    node->selected_child = 0;
+
+    node->nfiles = 0;
     node->size = 0;
+
     node->capacity = 20;
-    node->children = NULL;
+    node->files = NULL;
 }
 
-void dir_tree_insert(DirTreeNode *root, DirTreeNode* node)
+void dirtree_insert(dirtree *root, dirtree* node)
 {
-    if(root->children == NULL)
-        root->children = calloc(root->capacity, sizeof(DirTreeNode*));
+    if(root->files == NULL)
+        root->files = calloc(root->capacity, sizeof(dirtree*));
 
-    if(root->files >= root->capacity)
+    if(root->nfiles >= root->capacity)
     {
         root->capacity *= 2;
-        root->children = realloc(root->children, root->capacity * sizeof(DirTreeNode*));
+        root->files = realloc(root->files, root->capacity * sizeof(dirtree*));
     }
 
-    root->children[root->files] = node;
+    root->files[root->nfiles] = node;
     root->size += node->size;
 
-    root->files++;
+    root->nfiles++;
 }
 
-int dir_walk(const char *dir, DirTreeNode *tree)
+void dirtree_sort(dirtree *root, int (*comparator)(const void*, const void*))
+{
+    if(root == NULL)
+        return;
+    
+    qsort(root->files, root->nfiles, sizeof(dirtree*), comparator);
+
+    for(int i = 0; i < root->nfiles; i++)
+        dirtree_sort(root->files[i], comparator);
+}
+
+int dir_walk(const char *dir, dirtree *tree)
 {
 
     WIN32_FIND_DATA find_data;
@@ -47,20 +63,27 @@ int dir_walk(const char *dir, DirTreeNode *tree)
         if(strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
             continue;
 
-        DirTreeNode *n = create_dir_tree_node(find_data.cFileName);
+        dirtree *n = dirtree_create(find_data.cFileName);
         n->size = find_data.nFileSizeLow;
 
-    
         sprintf(path, "%s\\%s", dir, find_data.cFileName);
         
         if(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             n->size = dir_walk(path, n);
 
-        dir_tree_insert(tree, n);
+        dirtree_insert(tree, n);
 
     } while (FindNextFile(hFind, &find_data));
 
     FindClose(&hFind);
     
     return tree->size;
+}
+
+int comparator_size(const void *a, const void *b)
+{
+    dirtree *aa = *((dirtree**)a);
+    dirtree *bb = *((dirtree**)b);
+
+    return bb->size - aa->size;
 }
