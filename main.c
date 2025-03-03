@@ -71,15 +71,21 @@ int main(int argc, char **argv)
         switch(key)
         {
             case DUCK_QUIT:
-                dui_clear(CLEAR_ALL);
+                dui_end();
                 return 0;
 
             case DUCK_DOWN:
-                refresh = dirtree_select_next_file(root) * CLEAR_ATTRIBUTES;
+                if(dirtree_select_next_file(root))
+                {
+                    refresh = dui_scroll_down();
+                }
                 break;
 
             case DUCK_UP:
-                refresh = dirtree_select_prev_file(root) * CLEAR_ATTRIBUTES;
+                if(dirtree_select_prev_file(root))
+                {
+                    refresh = dui_scroll_up();
+                }
                 break;
 
             case DUCK_ENTER:

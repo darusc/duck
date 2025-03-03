@@ -25,6 +25,29 @@ typedef struct duioptions
 
 void dui_init(duioptions options);
 void dui_print(dirtree *tree);
+
+/**
+ * Clears the part of the console where output was printed. (The whole console for
+ * fullscreen mode and only the used part when in non fullscreen mode)
+ * 
+ * CLEAR_ALL - clears the whole screen by flooding with spaces ' ' and removing color attributes
+ * 
+ * CLEAR_ATTRIBUTES - clears only the color attributes
+ * 
+ * @param mode CLEAR_ALL or CLEAR_ATTRIBUTES
+ */
 void dui_clear(int mode);
+
+void dui_end();
+
+/**
+ * Moves the cursor down. Returns the clear method that needs to be used
+ */
+int dui_scroll_down();
+
+/**
+ * Moves the cursor up. Returns the clear method that needs to be used
+ */
+int dui_scroll_up();
 
 #endif
