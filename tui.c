@@ -39,7 +39,7 @@ void dui_init(duioptions doptions)
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(hConsole, &csbi);
 
-    cursor = csbi.dwCursorPosition.Y;
+    cursor = csbi.dwCursorPosition.Y + 1;
 
     // Disable the cursor
     CONSOLE_CURSOR_INFO cci;
@@ -55,26 +55,37 @@ void dui_print(dirtree *tree)
         return;
 
     DWORD bytes;
+    COORD coord = {0, 0};
 
-    COORD c = {0, 0};
+    char out[300] = "";
+    
+    // Print the size and current director path on the first line
+    char path[300] = "";
+    dirtree_getpath(tree, path);
+    
+    sprintf(out, "%10d %s", tree->size, path);
+
+    int len = strlen(out);
+    WriteConsoleOutputCharacterA(hConsole, out, len, coord, &bytes);
 
     for(int i = 0 + scrollOffset; i < tree->nfiles; i++)
     {
         dirtree *d = tree->files[i];
 
-        COORD coord = {0, (short)i - scrollOffset};
+        coord.Y = (short)i - scrollOffset + 1;
         if(!options.fullscreen)
             coord.Y += csbi.dwCursorPosition.Y;
         
-        char out[300];
+        // Space percentage for the current file
         double percent = (d->size * 1.0) / tree->size;
+        
         sprintf(out, "%10d %5.2lf%% [%-15.*s] %s", d->size, percent * 100, max((int)round(percent * 15), 1), loadChars, d->desc.name);
-        int len = strlen(out);
+        
+        len = strlen(out);
 
+        // Change console text color to highlight this file if selected
         if(i == tree->selected_file)
-        {
             WriteConsoleOutputAttribute(hConsole, colorAttributes, len, coord, &bytes);
-        }
     
         WriteConsoleOutputCharacterA(hConsole, out, len, coord, &bytes);
     }
@@ -96,7 +107,7 @@ void dui_clear(int mode)
     
     if (mode & CLEAR_CURSOR_OFFSET)
     {
-        cursor = csbi.dwCursorPosition.Y;
+        cursor = csbi.dwCursorPosition.Y + 1;
         scrollOffset = 0;
     }
 

@@ -185,3 +185,15 @@ void build_dirtree(dirtree *tree, const char *path, duckoptions options)
             break;
     }
 }
+
+int dirtree_getpath(dirtree *tree, char *path)
+{
+    if(tree == NULL)
+        return 0;
+    
+    int l = dirtree_getpath(tree->parent, path);
+    strcat(path, tree->desc.name);
+    strcat(path, "/");
+
+    return l + tree->desc.length + 1;
+}

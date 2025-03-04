@@ -86,4 +86,10 @@ int dirtree_select_prev_file(dirtree *root);
  */
 void build_dirtree(dirtree *tree, const char *path, duckoptions options);
 
+/**
+ * Returns the path from root for the given file (dritree node).
+ * @returns The length of path
+ */
+int dirtree_getpath(dirtree *tree, char *path);
+
 #endif
