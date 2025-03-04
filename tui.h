@@ -3,8 +3,9 @@
 
 #include "duck.h"
 
-#define CLEAR_ALL 1
-#define CLEAR_ATTRIBUTES 2
+#define CLEAR_ALL           0x01
+#define CLEAR_ATTRIBUTES    0x02
+#define CLEAR_CURSOR_OFFSET 0x04
 
 typedef struct duioptions 
 {

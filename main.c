@@ -58,12 +58,13 @@ int main(int argc, char **argv)
         }
     }
 
-    root = dirtree_alloc(".", DDIRECTORY, NULL);
-    build_dirtree(root, ".", doptions);
+    root = dirtree_alloc(argv[1], DDIRECTORY, NULL);
+    build_dirtree(root, argv[1], doptions);
     
     dui_init(uioptions);
 
     int refresh = 0;
+    dui_print(root);
     while(1)
     {
         int key = getch();
@@ -89,11 +90,11 @@ int main(int argc, char **argv)
                 break;
 
             case DUCK_ENTER:
-                refresh = dirtree_down(&root) * CLEAR_ALL;
+                refresh = dirtree_down(&root) * (CLEAR_ALL | CLEAR_CURSOR_OFFSET);
                 break;
 
             case DUCK_BACK:
-                refresh = dirtree_up(&root) * CLEAR_ALL;
+                refresh = dirtree_up(&root) * (CLEAR_ALL | CLEAR_CURSOR_OFFSET);
                 break;
         }
 
