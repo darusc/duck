@@ -58,12 +58,14 @@ void dui_print(dirtree *tree)
     COORD coord = {0, 0};
 
     char out[300] = "";
+    char sz[10];
     
     // Print the size and current director path on the first line
     char path[300] = "";
     dirtree_getpath(tree, path);
     
-    sprintf(out, "%10d %s", tree->size, path);
+    size((double)tree->size, sz);
+    sprintf(out, "%9s %s", sz, path);
 
     int len = strlen(out);
     WriteConsoleOutputCharacterA(hConsole, out, len, coord, &bytes);
@@ -79,7 +81,8 @@ void dui_print(dirtree *tree)
         // Space percentage for the current file
         double percent = (d->size * 1.0) / tree->size;
         
-        sprintf(out, "%10d %5.2lf%% [%-15.*s] %s", d->size, percent * 100, max((int)round(percent * 15), 1), loadChars, d->desc.name);
+        size((double)d->size, sz);
+        sprintf(out, "%9s %5.2lf%% [%-15.*s] %s", sz, percent * 100, max((int)round(percent * 15), 1), loadChars, d->desc.name);
         
         len = strlen(out);
 

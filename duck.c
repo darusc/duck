@@ -197,3 +197,20 @@ int dirtree_getpath(dirtree *tree, char *path)
 
     return l + tree->desc.length + 1;
 }
+
+static const char *magnitudes = "KMGT";
+
+void size(double size, char *out)
+{
+    int m = 0;
+    while(size > 1024)
+    {
+        size /= 1024.0;
+        m++;
+    }
+
+    if(m == 0)        
+        sprintf(out, "%3.2lf B", size);
+    else
+        sprintf(out, "%3.2lf %cB", size, magnitudes[m - 1]);
+}

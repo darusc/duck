@@ -92,4 +92,10 @@ void build_dirtree(dirtree *tree, const char *path, duckoptions options);
  */
 int dirtree_getpath(dirtree *tree, char *path);
 
+/**
+ * Transforms the given size in bytes to kb/mb/gb 
+ * to respect the following format %3.2d
+ */
+void size(double size, char* out);
+
 #endif
