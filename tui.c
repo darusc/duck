@@ -20,7 +20,7 @@ static int cursor;
 
 static duioptions options;
 
-static char loadChars[10];
+static char loadChars[15];
 
 void dui_init(duioptions doptions)
 {
@@ -33,7 +33,7 @@ void dui_init(duioptions doptions)
     for(int i = 0; i < MAX_PATH; i++)
         colorAttributes[i] = FOREGROUND_GREEN;
 
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 15; i++)
         loadChars[i] = 219;
 
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -82,7 +82,7 @@ void dui_print(dirtree *tree)
         double percent = (d->size * 1.0) / tree->size;
         
         size((double)d->size, sz);
-        sprintf(out, "%9s %5.2lf%% [%-15.*s] %s", sz, percent * 100, max((int)round(percent * 15), 1), loadChars, d->desc.name);
+        sprintf(out, "%9s %5.2lf%% [%-15.*s] %s%c", sz, percent * 100, max((int)round(percent * 15), 1), loadChars, d->desc.name, d->desc.type == DDIRECTORY ? '/' :  ' ');
         
         len = strlen(out);
 

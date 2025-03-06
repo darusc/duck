@@ -203,7 +203,7 @@ static const char *magnitudes = "KMGT";
 void size(double size, char *out)
 {
     int m = 0;
-    while(size > 1024)
+    while(size > 1000)
     {
         size /= 1024.0;
         m++;
