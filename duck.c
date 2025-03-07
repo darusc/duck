@@ -100,7 +100,15 @@ int dirtree_comp_size(const void *a, const void *b)
     dirtree *aa = *((dirtree**)a);
     dirtree *bb = *((dirtree**)b);
 
-    return bb->size - aa->size;
+    // Return like this instead of bb->size - aa->size
+    // because the comparator must return an int
+    // but dirtree.size is size_t aka unsigned long long
+    if(bb->size > aa->size)
+    return 1;
+    else if(bb->size < aa->size)
+        return -1;
+    else
+        return 0;
 }
 
 int dirtree_comp_alpha(const void *a, const void *b)
@@ -125,7 +133,7 @@ int dirtree_comp_items(const void *a, const void *b)
  * Walk the given directory and builds the resulted tree.
  * Returns the size of the directory.
  */
-int dir_walk(const char *dir, dirtree *tree, int all)
+size_t dir_walk(const char *dir, dirtree *tree, int all)
 {
     WIN32_FIND_DATA find_data;
     HANDLE hFind = NULL;

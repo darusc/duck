@@ -34,7 +34,7 @@ typedef struct dirtree
     /**
      * Size of the current file / directory in bytes;
      */
-    uint32_t size;
+    size_t size;
 
     /**
      * Number of files / directories contained
