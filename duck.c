@@ -142,7 +142,7 @@ size_t dir_walk(const char *dir, dirtree *tree, int all)
     sprintf(path, "%s\\*", dir);
 
     if((hFind = FindFirstFile(path, &find_data)) == INVALID_HANDLE_VALUE)
-        return -1;
+        return 0;
 
     do
     {
@@ -169,7 +169,7 @@ size_t dir_walk(const char *dir, dirtree *tree, int all)
 
     } while (FindNextFile(hFind, &find_data));
 
-    FindClose(&hFind);
+    FindClose(hFind);
     
     return tree->size;
 }
