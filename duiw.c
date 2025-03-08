@@ -38,9 +38,6 @@ void dui_init(duioptions doptions)
     for(int i = 0; i < MAX_PATH; i++)
         colorAttributes[i] = FOREGROUND_GREEN;
 
-    for(int i = 0; i < 15; i++)
-        loadChars[i] = 219;
-
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(hConsole, &csbi);
 

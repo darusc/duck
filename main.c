@@ -4,26 +4,14 @@
 
 #ifdef __unix__
     #include <ncurses.h>
+#else
+    #include <conio.h>
 #endif
 
 #include "duck.h"
 #include "dui.h"
 
 #define ARG(i, s) (strcmp(argv[i], s) == 0)
-
-#ifdef __unix__
-    #define DUCK_DOWN KEY_DOWN
-    #define DUCK_UP KEY_UP
-    #define DUCK_QUIT 'q'
-    #define DUCK_ENTER 10
-    #define DUCK_BACK KEY_BACKSPACE
-#else
-    #define DUCK_DOWN 80
-    #define DUCK_UP 72
-    #define DUCK_QUIT 'q'
-    #define DUCK_ENTER 13
-    #define DUCK_BACK 8 
-#endif
 
 dirtree* root = NULL;
 

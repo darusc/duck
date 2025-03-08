@@ -1,7 +1,21 @@
-#ifndef TUI_H
-#define TUI_H
+#ifndef DUI_H
+#define DUI_H
 
 #include "duck.h"
+
+#ifdef __unix__
+    #define DUCK_DOWN KEY_DOWN
+    #define DUCK_UP KEY_UP
+    #define DUCK_QUIT 'q'
+    #define DUCK_ENTER 10
+    #define DUCK_BACK KEY_BACKSPACE
+#else
+    #define DUCK_DOWN 80
+    #define DUCK_UP 72
+    #define DUCK_QUIT 'q'
+    #define DUCK_ENTER 13
+    #define DUCK_BACK 8 
+#endif
 
 #define CLEAR_ALL           0x01
 #define CLEAR_ATTRIBUTES    0x02
