@@ -15,6 +15,7 @@
 
 static int scrollOffset = 0;
 static int cursor;
+static int curfetch;
 
 static duioptions options;
 
@@ -26,6 +27,20 @@ static WORD colorAttributes[MAX_PATH];
 
 static HANDLE hConsole;
 static CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+/**
+ * Sets the cursor position if the cursor fetch flag is activated.
+ */
+void cursor_update(int pos)
+{
+    if(!curfetch)
+        return;
+
+    cursor = min(pos, csbi.dwMaximumWindowSize.Y);
+    scrollOffset = max(0, pos - csbi.dwMaximumWindowSize.Y);
+    
+    curfetch = 0;
+}
 
 void dui_init(duioptions doptions)
 {
@@ -55,6 +70,12 @@ void dui_print(dirtree *tree)
 {
     if(tree == NULL)
         return;
+
+    /**
+     * Sets the cursor position to be on the same line with
+     * the highlighted file when navigating up or down the directory tree
+     */
+    cursor_update(tree->selected_file + 1);
 
     DWORD bytes;
     COORD coord = {0, 0};
@@ -114,6 +135,9 @@ void dui_clear(int mode)
     {
         cursor = csbi.dwCursorPosition.Y + 1;
         scrollOffset = 0;
+
+        // Enable the cursor fetch flag so it can be set on the next call of dui_print
+        curfetch = 1;
     }
 
     if(mode & CLEAR_ATTRIBUTES)

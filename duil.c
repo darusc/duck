@@ -18,8 +18,23 @@
 
 static int scrollOffset = 0;
 static int cursor;
+static int curfetch;
 
 static duioptions options;
+
+/**
+ * Sets the cursor position if the cursor fetch flag is activated.
+ */
+void cursor_update(int pos)
+{
+    if(!curfetch)
+        return;
+
+    cursor = MIN(pos, LINES);
+    scrollOffset = MAX(0, pos - LINES);
+    
+    curfetch = 0;
+}
 
 void dui_init(duioptions doptions)
 {
@@ -45,6 +60,12 @@ void dui_print(dirtree *tree)
 {
     if(tree == NULL)
         return;
+
+    /**
+     * Sets the cursor position to be on the same line with
+     * the highlighted file when navigating up or down the directory tree
+     */
+    cursor_update(tree->selected_file + 1);
 
     char out[310] = "";
     char sz[10];
@@ -87,6 +108,9 @@ void dui_clear(int mode)
     {
         cursor = 1;
         scrollOffset = 0;
+
+        // Enable the cursor fetch flag so it can be set on the next call of dui_print
+        curfetch = 1;
     }
 }
 
