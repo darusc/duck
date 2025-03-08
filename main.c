@@ -1,17 +1,29 @@
 #include <stdio.h>
-#include <conio.h>
+#include <stdlib.h>
 #include <string.h>
 
+#ifdef __unix__
+    #include <ncurses.h>
+#endif
+
 #include "duck.h"
-#include "tui.h"
+#include "dui.h"
 
 #define ARG(i, s) (strcmp(argv[i], s) == 0)
 
-#define DUCK_DOWN 80
-#define DUCK_UP 72
-#define DUCK_QUIT 'q'
-#define DUCK_ENTER 13
-#define DUCK_BACK 8 
+#ifdef __unix__
+    #define DUCK_DOWN KEY_DOWN
+    #define DUCK_UP KEY_UP
+    #define DUCK_QUIT 'q'
+    #define DUCK_ENTER 10
+    #define DUCK_BACK KEY_BACKSPACE
+#else
+    #define DUCK_DOWN 80
+    #define DUCK_UP 72
+    #define DUCK_QUIT 'q'
+    #define DUCK_ENTER 13
+    #define DUCK_BACK 8 
+#endif
 
 dirtree* root = NULL;
 
@@ -63,12 +75,12 @@ int main(int argc, char **argv)
     
     dui_init(uioptions);
 
-    int refresh = 0;
+    int clrmode = 0;
     dui_print(root);
     while(1)
     {
         int key = getch();
-
+            
         switch(key)
         {
             case DUCK_QUIT:
@@ -78,31 +90,38 @@ int main(int argc, char **argv)
             case DUCK_DOWN:
                 if(dirtree_select_next_file(root))
                 {
-                    refresh = dui_scroll_down();
+                    clrmode = dui_scroll_down();
                 }
                 break;
 
             case DUCK_UP:
                 if(dirtree_select_prev_file(root))
                 {
-                    refresh = dui_scroll_up();
+                    clrmode = dui_scroll_up();
                 }
                 break;
 
             case DUCK_ENTER:
-                refresh = dirtree_down(&root) * (CLEAR_ALL | CLEAR_CURSOR_OFFSET);
+                clrmode = dirtree_down(&root) * (CLEAR_ALL | CLEAR_CURSOR_OFFSET);
                 break;
 
             case DUCK_BACK:
-                refresh = dirtree_up(&root) * (CLEAR_ALL | CLEAR_CURSOR_OFFSET);
+                clrmode = dirtree_up(&root) * (CLEAR_ALL | CLEAR_CURSOR_OFFSET);
                 break;
         }
 
-        if(refresh)
+        if(clrmode)
         {
-            dui_clear(refresh);
-            dui_print(root);
-            refresh = 0;
+            #ifdef __unix__
+                dui_clear(clrmode);
+                dui_print(root);
+                refresh();
+            #else
+                dui_clear(clrmode);
+                dui_print(root);
+            #endif
+
+            clrmode = 0;
         }
     }
 

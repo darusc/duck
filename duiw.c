@@ -1,10 +1,22 @@
-#include "tui.h"
+/**
+ * DUCK Terminal UI implementation for win32 system
+ */
+
+#include "dui.h"
+
+#ifndef __unix__
 
 #include <stdio.h>
-#include <windows.h>
+#include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
-#ifdef WIN32
+#include <windows.h>
+
+static int scrollOffset = 0;
+static int cursor;
+
+static duioptions options;
 
 /**
  * Attributes used to set console text color.
@@ -14,13 +26,6 @@ static WORD colorAttributes[MAX_PATH];
 
 static HANDLE hConsole;
 static CONSOLE_SCREEN_BUFFER_INFO csbi;
-
-static int scrollOffset = 0;
-static int cursor;
-
-static duioptions options;
-
-static char loadChars[15];
 
 void dui_init(duioptions doptions)
 {

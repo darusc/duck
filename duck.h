@@ -2,7 +2,13 @@
 #define DUCK_H
 
 #include <stdint.h>
-#include <windows.h>
+
+#ifdef __unix__
+    #define MAX_PATH 260
+    #include <sys/types.h>
+#else
+    #include <windows.h>
+#endif 
 
 enum filetype
 {
@@ -81,21 +87,21 @@ int dirtree_select_next_file(dirtree *root);
 int dirtree_select_prev_file(dirtree *root);
 
 /**
+ * Returns the path from root for the given file (dritree node).
+ * @returns The length of path
+ */
+ int dirtree_getpath(dirtree *tree, char *path);
+
+ /**
+  * Transforms the given size in bytes to kb/mb/gb 
+  * to respect the following format %3.2d
+  */
+ void size(double size, char* out);
+
+/**
  * Recursively traverse all the files and directory starting at path
  * and build the output directory tree
  */
 void build_dirtree(dirtree *tree, const char *path, duckoptions options);
-
-/**
- * Returns the path from root for the given file (dritree node).
- * @returns The length of path
- */
-int dirtree_getpath(dirtree *tree, char *path);
-
-/**
- * Transforms the given size in bytes to kb/mb/gb 
- * to respect the following format %3.2d
- */
-void size(double size, char* out);
 
 #endif

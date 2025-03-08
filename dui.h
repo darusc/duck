@@ -7,6 +7,8 @@
 #define CLEAR_ATTRIBUTES    0x02
 #define CLEAR_CURSOR_OFFSET 0x04
 
+static const char loadChars[15] = {219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219};
+
 typedef struct duioptions 
 {
     /**

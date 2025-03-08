@@ -1,0 +1,135 @@
+/**
+ * DUCK Terminal UI implementation for unix based system
+ */
+
+#include "dui.h"
+
+#ifdef __unix__
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <sys/param.h>
+#include <ncurses.h>
+
+static int scrollOffset = 0;
+static int cursor;
+
+static duioptions options;
+
+void dui_init(duioptions doptions)
+{
+    options = doptions;
+    cursor = 1;
+
+    initscr();
+
+    if(has_colors()) 
+    {
+        use_default_colors();
+        start_color();
+        init_pair(1, COLOR_GREEN, -1);
+    }
+
+    noecho();
+    keypad(stdscr, TRUE);
+    curs_set(0);
+    scrollok(stdscr, TRUE);
+}
+
+void dui_print(dirtree *tree)
+{
+    if(tree == NULL)
+        return;
+
+    char out[310] = "";
+    char sz[10];
+
+    char path[310] = "";
+    dirtree_getpath(tree, path);
+    
+    size((double)tree->size, sz);
+    
+    mvprintw(0, 0, "%9s %s", sz, path);
+
+    for(int i = 0 + scrollOffset; i < tree->nfiles; i++)
+    {
+        dirtree *d = tree->files[i];
+        
+        // Size percentage for the current file
+        double percent = (d->size * 1.0) / tree->size;
+        
+        size((double)d->size, sz);
+        
+        // Change console text color to highlight this file if selected
+        if(i == tree->selected_file)
+            attron(COLOR_PAIR(1));
+        
+        mvprintw(i - scrollOffset + 1, 0, "%9s %5.2lf%% [%-15.*s] %s%c", sz, percent * 100, MAX((int)round(percent * 15), 1), loadChars, d->desc.name, d->desc.type == DDIRECTORY ? '/' :  ' ');
+        
+        // Disable color
+        attroff(COLOR_PAIR(1));
+    }
+}
+
+void dui_clear(int mode)
+{
+    if(mode & CLEAR_ALL)
+    {
+        clear();
+    }
+
+    if(mode & CLEAR_CURSOR_OFFSET)
+    {
+        cursor = 1;
+        scrollOffset = 0;
+    }
+}
+
+void dui_end()
+{
+    curs_set(1);
+    endwin();
+}
+
+int dui_scroll_down()
+{
+    if(cursor < LINES - 1)
+    {
+        // When the cursor is on the last line scroll 
+        // by adding an offset when printing
+        // Also we need to clear the whole console when doing this to avoid
+        // artifacts, as lines can now be of different length
+        cursor++;
+        return CLEAR_ATTRIBUTES;
+    }
+    else
+    {
+        scrollOffset++;
+        return CLEAR_ALL;
+    } 
+}
+
+int dui_scroll_up()
+{
+    if(cursor + scrollOffset > LINES - 1)
+    {
+        // When the cursor is on the last line scroll 
+        // by adding an offset when printing
+        // Also we need to clear the whole console when doing this to avoid
+        // artifacts, as lines can now be of different length
+        scrollOffset--;
+        return CLEAR_ALL;
+    }
+    else
+    {
+        cursor--;
+        return CLEAR_ATTRIBUTES;
+    }
+}
+
+#endif 
