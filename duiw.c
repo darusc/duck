@@ -36,8 +36,8 @@ void cursor_update(int pos)
     if(!curfetch)
         return;
 
-    cursor = min(pos, csbi.dwMaximumWindowSize.Y);
-    scrollOffset = max(0, pos - csbi.dwMaximumWindowSize.Y);
+    cursor = min(pos + options.y, csbi.dwMaximumWindowSize.Y);
+    scrollOffset = max(0, pos + options.y - csbi.dwMaximumWindowSize.Y);
     
     curfetch = 0;
 }
@@ -46,8 +46,7 @@ void dui_init(duioptions doptions)
 {
     options = doptions;        
 
-    if(options.fullscreen)
-        system("cls");    
+    system("cls");    
 
     // Initialize the color attributes
     for(int i = 0; i < MAX_PATH; i++)
@@ -56,7 +55,7 @@ void dui_init(duioptions doptions)
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(hConsole, &csbi);
 
-    cursor = csbi.dwCursorPosition.Y + 1;
+    cursor = csbi.dwCursorPosition.Y + options.y + 1;
 
     // Disable the cursor
     CONSOLE_CURSOR_INFO cci;
@@ -78,7 +77,7 @@ void dui_print(dirtree *tree)
     cursor_update(tree->selected_file + 1);
 
     DWORD bytes;
-    COORD coord = {0, 0};
+    COORD coord = {0, options.y};
 
     char out[300] = "";
     char sz[10];
@@ -97,9 +96,7 @@ void dui_print(dirtree *tree)
     {
         dirtree *d = tree->files[i];
 
-        coord.Y = (short)i - scrollOffset + 1;
-        if(!options.fullscreen)
-            coord.Y += csbi.dwCursorPosition.Y;
+        coord.Y = options.y + (short)i - scrollOffset + 1;
         
         // Space percentage for the current file
         double percent = (d->size * 1.0) / tree->size;
@@ -119,21 +116,24 @@ void dui_print(dirtree *tree)
 
 void dui_clear(int mode)
 {
-    COORD coord = {0, 0};
+    COORD coord = {0, options.y};
     DWORD bytes;
-
-    if(!options.fullscreen)
-        coord.Y = csbi.dwCursorPosition.Y;
 
     if(mode & CLEAR_ALL)
     {
         FillConsoleOutputCharacter(hConsole, TEXT(' '), csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
         FillConsoleOutputAttribute(hConsole, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
     }
+
+    if(mode & CLEAR_BENCHMARK)
+    {
+        coord.Y = 0;
+        FillConsoleOutputCharacter(hConsole, TEXT(' '), csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
+    }
     
     if (mode & CLEAR_CURSOR_OFFSET)
     {
-        cursor = csbi.dwCursorPosition.Y + 1;
+        cursor = csbi.dwCursorPosition.Y + options.y + 1;
         scrollOffset = 0;
 
         // Enable the cursor fetch flag so it can be set on the next call of dui_print
@@ -154,6 +154,9 @@ void dui_end()
 
     cci.bVisible = 1;
     SetConsoleCursorInfo(hConsole, &cci);   
+
+    COORD coord = {0, 0};
+    SetConsoleCursorPosition(hConsole, coord);
 }
 
 int dui_scroll_down()

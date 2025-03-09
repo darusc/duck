@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef __unix__
     #ifndef _DEFAULT_SOURCE
@@ -15,7 +16,7 @@
     #include <dirent.h>
 #endif
 
-static const char *magnitudes = "KMGT";
+benchmark bench = {0, 0, 0, 0};
 
 dirtree *dirtree_alloc(const char *name, enum filetype type, dirtree *parent)
 {
@@ -174,7 +175,7 @@ int dirtree_getpath(dirtree *tree, char *path)
     * Returns the size of the directory.
     * UNIX IMPLEMENTATION
     */
-    size_t dir_walk(const char *dir, dirtree *tree, int all)
+    size_t dir_walk(const char *dir, dirtree *tree, duckoptions options)
     {
         char path[MAX_PATH];
 
@@ -206,9 +207,11 @@ int dirtree_getpath(dirtree *tree, char *path)
             n->size = fstat.st_size;
 
             if(isDirectory)
-                n->size = dir_walk(path, n, all);
+                n->size = dir_walk(path, n, options);
 
             dirtree_insert(tree, n);
+
+            BENCHMARK_INC_FILES(bench, isDirectory);
         }
 
         closedir(d);
@@ -221,7 +224,7 @@ int dirtree_getpath(dirtree *tree, char *path)
     * Returns the size of the directory.
     * WIN32 IMPLEMENTATION
     */
-    size_t dir_walk(const char *dir, dirtree *tree, int all)
+    size_t dir_walk(const char *dir, dirtree *tree, duckoptions options)
     {
         WIN32_FIND_DATA find_data;
         HANDLE hFind = NULL;
@@ -238,8 +241,8 @@ int dirtree_getpath(dirtree *tree, char *path)
             if(strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
                 continue;
 
-            // Skip if the file / directory is hiiden and all flag is not set
-            if(!all && find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
+            // Skip if the file / directory is hiiden and hide flag is set
+            if(options.hide && find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
                 continue;
 
             int isDirectory = find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
@@ -251,9 +254,11 @@ int dirtree_getpath(dirtree *tree, char *path)
             
             // If the file is a directory recurse on it
             if(isDirectory)
-                n->size = dir_walk(path, n, all);
+                n->size = dir_walk(path, n, options);
                 
             dirtree_insert(tree, n);
+
+            BENCHMARK_INC_FILES(bench, isDirectory);
 
         } while (FindNextFile(hFind, &find_data));
 
@@ -265,7 +270,14 @@ int dirtree_getpath(dirtree *tree, char *path)
 
 void build_dirtree(dirtree *tree, const char *path, duckoptions options)
 {
-    dir_walk(path, tree, options.all);
+    clock_t begin, end;
+
+    begin = clock();
+
+    dir_walk(path, tree, options);
+
+    end = clock();
+    bench.dtime = (double)(end - begin) / CLOCKS_PER_SEC;
 
     switch(options.sort)
     {
@@ -281,4 +293,7 @@ void build_dirtree(dirtree *tree, const char *path, duckoptions options)
             dirtree_sort(tree, &dirtree_comp_items);
             break;
     }
+
+    end = clock();
+    bench.ttime = (double)(end - begin) / CLOCKS_PER_SEC;
 }

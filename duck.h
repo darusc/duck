@@ -16,13 +16,50 @@ enum filetype
     DDIRECTORY
 };
 
+static const char *magnitudes = "KMGT";
+
+
+typedef struct duckoptions
+{
+    int benchmark;
+    int hide;
+
+    enum sortmethod
+    {
+        DSIZE,
+        DALPHABETIC,
+        DITEMS
+    } sort;
+
+} duckoptions;
+
+
+/**
+ * Benchmark result data
+ */
+typedef struct benchmark
+{
+    double ttime; // total time
+    double dtime; // discovery time
+    int files;
+    int directories;
+} benchmark;
+
+#define BENCHMARK_LINES 4
+#define BENCHMARK_INC_FILES(bench, dir) if(dir) \
+                                            bench.directories++; \
+                                        else \
+                                            bench.files++;
+
+extern benchmark bench;
+
+
 typedef struct dirtree_desc
 {
     enum filetype type;
     char name[MAX_PATH];
     uint8_t length;
 } dirtree_desc;
-
 
 /**
  * Node of the directory tree
@@ -53,21 +90,6 @@ typedef struct dirtree
     struct dirtree *parent;
 } dirtree;
 
-typedef struct duckoptions
-{
-    enum sortmethod
-    {
-        DSIZE,
-        DALPHABETIC,
-        DITEMS
-    } sort;
-
-    /**
-     * Show all files (hidden files too)
-     */
-    int all;
-} duckoptions;
-
 dirtree* dirtree_alloc(const char* name, enum filetype type, dirtree *parent);
 
 void dirtree_insert(dirtree *root, dirtree* node);
@@ -90,13 +112,13 @@ int dirtree_select_prev_file(dirtree *root);
  * Returns the path from root for the given file (dritree node).
  * @returns The length of path
  */
- int dirtree_getpath(dirtree *tree, char *path);
+int dirtree_getpath(dirtree *tree, char *path);
 
- /**
-  * Transforms the given size in bytes to kb/mb/gb 
-  * to respect the following format %3.2d
-  */
- void size(double size, char* out);
+/**
+ * Transforms the given size in bytes to kb/mb/gb 
+ * to respect the following format %3.2d
+ */
+void size(double size, char* out);
 
 /**
  * Recursively traverse all the files and directory starting at path

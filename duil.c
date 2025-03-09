@@ -30,8 +30,8 @@ void cursor_update(int pos)
     if(!curfetch)
         return;
 
-    cursor = MIN(pos, LINES);
-    scrollOffset = MAX(0, pos - LINES);
+    cursor = MIN(pos + options.y, LINES);
+    scrollOffset = MAX(0, pos + options.y - LINES);
     
     curfetch = 0;
 }
@@ -39,7 +39,7 @@ void cursor_update(int pos)
 void dui_init(duioptions doptions)
 {
     options = doptions;
-    cursor = 1;
+    cursor = 1 + options.y;
 
     initscr();
 
@@ -75,7 +75,7 @@ void dui_print(dirtree *tree)
     
     size((double)tree->size, sz);
     
-    mvprintw(0, 0, "%9s %s", sz, path);
+    mvprintw(options.y, 0, "%9s %s", sz, path);
 
     for(int i = 0 + scrollOffset; i < tree->nfiles; i++)
     {
@@ -90,7 +90,7 @@ void dui_print(dirtree *tree)
         if(i == tree->selected_file)
             attron(COLOR_PAIR(1));
         
-        mvprintw(i - scrollOffset + 1, 0, "%9s %5.2lf%% [%-15.*s] %s%c", sz, percent * 100, MAX((int)round(percent * 15), 1), loadChars, d->desc.name, d->desc.type == DDIRECTORY ? '/' :  ' ');
+        mvprintw(options.y + i - scrollOffset + 1, 0, "%9s %5.2lf%% [%-15.*s] %s%c", sz, percent * 100, MAX((int)round(percent * 15), 1), loadChars, d->desc.name, d->desc.type == DDIRECTORY ? '/' :  ' ');
         
         // Disable color
         attroff(COLOR_PAIR(1));
@@ -101,12 +101,13 @@ void dui_clear(int mode)
 {
     if(mode & CLEAR_ALL)
     {
-        clear();
+        move(options.y, 0);
+        clrtobot();
     }
 
     if(mode & CLEAR_CURSOR_OFFSET)
     {
-        cursor = 1;
+        cursor = options.y + 1;
         scrollOffset = 0;
 
         // Enable the cursor fetch flag so it can be set on the next call of dui_print

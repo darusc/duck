@@ -22,10 +22,11 @@ int main(int argc, char **argv)
         printf("duck v1.0 - Disk usage analysis tool\nhttps://github.com/darusc/duck\n\n");
         printf("Usage:\n duck <directory> [options]\n\n");
         printf("Options:\n");
+        printf(" -b,  --benchmark            Benchmark execution\n");
         printf(" -h,  --help                 Print this info\n");
-        printf(" -ni, --nointeractive        Disables interactive terminal output. Shows all files directly.\n");
-        printf(" -nf, --nofullscreen         Disables fullscreen terminal output.\n");
-        printf(" -a,  --all                  Shows all files (including hidden files)\n");
+    #ifndef __unix__
+        printf(" -hf, --hidden               Ignore hidden files.\n");
+    #endif
         printf(" -s,  --sort <method>        Sort by (size is default)\n");
         printf("      methods: <size|alphabetic|items|>\n");         
         printf("\n\n");
@@ -33,19 +34,19 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    duioptions uioptions = {1, 1};
-    duckoptions doptions = {DSIZE, 0};
+    duioptions uioptions = {1, 0};
+    duckoptions doptions = {0 ,0, DSIZE};
 
     for(int i = 2; i < argc; i++)
     {
-        if(ARG(i, "-ni") || ARG(i, "--nointeractive"))
-            uioptions.interactive = 0;
-
-        if(ARG(i, "-nf") || ARG(i, "--nofullscreen"))
-            uioptions.fullscreen = 0;
-
-        if(ARG(i, "-a") || ARG(i, "--all"))
-            doptions.all = 1;
+        if(ARG(i, "-b") || ARG(i, "--benchmark"))
+        {
+            doptions.benchmark = 1;
+            uioptions.y = BENCHMARK_LINES;
+        }
+        
+        if(ARG(i, "-hf") || ARG(i, "--hidden"))
+            doptions.hide = 1;
 
         if(ARG(i, "-s") || ARG(i, "--sort"))
         {
@@ -63,6 +64,11 @@ int main(int argc, char **argv)
     
     dui_init(uioptions);
 
+    if(doptions.benchmark)
+    {
+        dui_benchmark_print(bench);
+    }
+
     int clrmode = 0;
     dui_print(root);
     while(1)
@@ -72,6 +78,8 @@ int main(int argc, char **argv)
         switch(key)
         {
             case DUCK_QUIT:
+                if(doptions.benchmark)
+                    dui_clear(CLEAR_BENCHMARK);
                 dui_end();
                 return 0;
 

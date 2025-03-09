@@ -3,7 +3,11 @@
 
 #include "duck.h"
 
+#include <stdio.h>
+
 #ifdef __unix__
+    #include <ncurses.h>
+
     #define DUCK_DOWN KEY_DOWN
     #define DUCK_UP KEY_UP
     #define DUCK_QUIT 'q'
@@ -20,28 +24,40 @@
 #define CLEAR_ALL           0x01
 #define CLEAR_ATTRIBUTES    0x02
 #define CLEAR_CURSOR_OFFSET 0x04
+#define CLEAR_BENCHMARK     0x08
 
 static const char loadChars[15] = {219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219};
 
 typedef struct duioptions 
 {
     /**
-     * Intercative mode.
-     * (enabled) Displays only the direct children of a directory and allows navigation
-     * (disabled) Displays all files in a tree like structure
-     */
-    int interactive;
-
-    /**
      * Fullscreen mode
      * (enabled) Clears the terminal before printing
      * (disabled) Doesn't clear the terminal, the output is printed normally
      */
     int fullscreen;
+
+    /**
+     * Y coord to start drawing UI from
+     */
+    int y;
 } duioptions;
 
 void dui_init(duioptions options);
 void dui_print(dirtree *tree);
+
+static inline void dui_benchmark_print(benchmark bench)
+{
+    #ifdef __unix__
+        printw("Files: %d  Directories: %d\n", bench.files, bench.directories);
+        printw("Discovery time: %.3lf sec\n", bench.dtime);
+        printw("Total time: %.3lf sec\n", bench.dtime);
+    #else
+        printf("Files: %d  Directories: %d\n", bench.files, bench.directories);
+        printf("Discovery time: %.3lf sec\n", bench.dtime);
+        printf("Total time: %.3lf sec\n", bench.dtime);
+    #endif
+}
 
 /**
  * Clears the part of the console where output was printed. (The whole console for
