@@ -34,7 +34,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    duioptions uioptions = {1, 0};
+    duioptions uioptions = {1, 2};
     duckoptions doptions = {0 ,0, DSIZE};
 
     for(int i = 2; i < argc; i++)
@@ -59,10 +59,12 @@ int main(int argc, char **argv)
         }
     }
 
-    root = dirtree_alloc(argv[1], DDIRECTORY, NULL);
+    root = dirtree_alloc("~", DDIRECTORY, NULL);
     build_dirtree(root, argv[1], doptions);
     
     dui_init(uioptions);
+
+    dui_header();
 
     if(doptions.benchmark)
     {
@@ -78,8 +80,7 @@ int main(int argc, char **argv)
         switch(key)
         {
             case DUCK_QUIT:
-                if(doptions.benchmark)
-                    dui_clear(CLEAR_BENCHMARK);
+                dui_clear(CLEAR_END);
                 dui_end();
                 return 0;
 

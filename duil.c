@@ -47,13 +47,21 @@ void dui_init(duioptions doptions)
     {
         use_default_colors();
         start_color();
-        init_pair(1, COLOR_GREEN, -1);
+        init_pair(1, -1, COLOR_GREEN);
+        init_pair(2, COLOR_WHITE, COLOR_BLUE);
     }
 
     noecho();
     keypad(stdscr, TRUE);
     curs_set(0);
     scrollok(stdscr, TRUE);
+}
+
+void dui_header()
+{
+    attron(COLOR_PAIR(2));
+    printw("%s", headerMsg);
+    attroff(COLOR_PAIR(2));
 }
 
 void dui_print(dirtree *tree)

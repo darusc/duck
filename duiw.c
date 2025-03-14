@@ -50,7 +50,7 @@ void dui_init(duioptions doptions)
 
     // Initialize the color attributes
     for(int i = 0; i < MAX_PATH; i++)
-        colorAttributes[i] = FOREGROUND_GREEN;
+        colorAttributes[i] = BACKGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN;;
 
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(hConsole, &csbi);
@@ -63,6 +63,20 @@ void dui_init(duioptions doptions)
 
     cci.bVisible = 0;
     SetConsoleCursorInfo(hConsole, &cci);
+}
+
+void dui_header()
+{
+    COORD coord = {0, 0};
+    DWORD bytes;
+
+    WORD *background = (WORD*)malloc(csbi.dwMaximumWindowSize.X * sizeof(WORD));
+    for(int i = 0; i < csbi.dwMaximumWindowSize.X; i++)
+        background[i] = BACKGROUND_BLUE | FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN;
+    
+    WriteConsoleOutputAttribute(hConsole, background, csbi.dwMaximumWindowSize.X, coord, &bytes);
+
+    WriteConsoleOutputCharacter(hConsole, headerMsg, strlen(headerMsg), coord, &bytes);
 }
 
 void dui_print(dirtree *tree)
@@ -102,7 +116,7 @@ void dui_print(dirtree *tree)
         double percent = (d->size * 1.0) / tree->size;
         
         size((double)d->size, sz);
-        sprintf(out, "%9s %5.2lf%% [%-15.*s] %s%c", sz, percent * 100, max((int)round(percent * 15), 1), loadChars, d->desc.name, d->desc.type == DDIRECTORY ? '/' :  ' ');
+        sprintf(out, "%9s %5.2lf%% [%-15.*s] %s%c", sz, percent * 100, (int)round(percent * 15), loadChars, d->desc.name, d->desc.type == DDIRECTORY ? '/' :  ' ');
         
         len = strlen(out);
 
@@ -125,10 +139,11 @@ void dui_clear(int mode)
         FillConsoleOutputAttribute(hConsole, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
     }
 
-    if(mode & CLEAR_BENCHMARK)
+    if(mode & CLEAR_END)
     {
         coord.Y = 0;
         FillConsoleOutputCharacter(hConsole, TEXT(' '), csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
+        FillConsoleOutputAttribute(hConsole, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &bytes);
     }
     
     if (mode & CLEAR_CURSOR_OFFSET)

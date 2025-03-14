@@ -139,7 +139,7 @@ int dirtree_comp_items(const void *a, const void *b)
     dirtree *aa = *((dirtree**)a);
     dirtree *bb = *((dirtree**)b);
 
-    return aa->files - bb->files;
+    return bb->nfiles - aa->nfiles;
 }
 
 void size(double size, char *out)
