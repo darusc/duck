@@ -67,6 +67,7 @@ Total time: 5.025 sec
 Files: 916529  Directories: 109097
 Discovery time: 21.198 sec
 Total time: 21.198 sec
+
 111.18 GB ~/
  45.11 GB 40.58% [██████         ] Qt/
  28.00 GB 25.19% [████           ] Xilinx/
