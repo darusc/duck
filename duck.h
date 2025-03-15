@@ -31,6 +31,11 @@ typedef struct duckoptions
         DITEMS
     } sort;
 
+    int include;
+    int exclude;
+    int nexts;
+    char extenstions[20][20];
+
 } duckoptions;
 
 

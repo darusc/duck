@@ -169,6 +169,45 @@ int dirtree_getpath(dirtree *tree, char *path)
     return l + tree->desc.length + 1;
 }
 
+/**
+ * Applies filter options on the given file.
+ * @return 0 if the file should be skipped.
+ */
+int filter(char *file, int isDirectory, int isHidden, duckoptions options)
+{
+    if(options.hide && isHidden)
+        return 0;
+
+    if(options.nexts)
+    {
+        if(isDirectory && options.include)
+            return 0;
+
+        int ext_in_list = 0;
+        const char *ext = strrchr(file, '.');
+        
+        if(ext != NULL)
+        {
+            for(int i = 0; i < options.nexts; i++)
+            {
+                if(strcmp(ext + 1, options.extenstions[i]) == 0)
+                {
+                    ext_in_list = 1;
+                    break;
+                }
+            }
+        }
+
+        if(options.include && !ext_in_list)
+            return 0;
+
+        if(options.exclude && ext_in_list)
+            return 0;
+    }
+
+    return 1;
+}
+
 #ifdef __unix__
     /**
     * Walk the given directory and builds the resulted tree.
@@ -193,11 +232,10 @@ int dirtree_getpath(dirtree *tree, char *path)
             if(strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
                 continue;
 
-            // Skip if the file / directory is hiiden and all flag is not set
-            // if(!all && dent->d_type & FILE_ATTRIBUTE_HIDDEN)
-            //     continue;
-
             int isDirectory = dent->d_type == 4; //DT_DIR
+
+            if(!filter(dent->d_name, isDirectory, 0, options))
+                continue;
 
             sprintf(path, "%s/%s", dir, dent->d_name);
 
@@ -241,11 +279,10 @@ int dirtree_getpath(dirtree *tree, char *path)
             if(strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
                 continue;
 
-            // Skip if the file / directory is hiiden and hide flag is set
-            if(options.hide && find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
-                continue;
-
             int isDirectory = find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+
+            if(!filter(find_data.cFileName, isDirectory, find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN, options))
+                continue;
 
             dirtree *n = dirtree_alloc(find_data.cFileName, isDirectory ? DDIRECTORY : DFILE, tree);
             n->size = find_data.nFileSizeLow;

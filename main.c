@@ -27,6 +27,8 @@ int main(int argc, char **argv)
     #ifndef __unix__
         printf(" -hf, --hidden               Ignore hidden files.\n");
     #endif
+        printf(" -i,  --include [extensions] Include only files with specified extensions\n");
+        printf(" -e,  --exclude [extensions] Exclude files with specified extensions\n");
         printf(" -s,  --sort <method>        Sort by (size is default)\n");
         printf("      methods: <size|alphabetic|items|>\n");         
         printf("\n\n");
@@ -35,7 +37,7 @@ int main(int argc, char **argv)
     }
 
     duioptions uioptions = {1, 2};
-    duckoptions doptions = {0 ,0, DSIZE};
+    duckoptions doptions = {0 ,0, DSIZE, 0, 0, 0};
 
     for(int i = 2; i < argc; i++)
     {
@@ -44,11 +46,9 @@ int main(int argc, char **argv)
             doptions.benchmark = 1;
             uioptions.y = BENCHMARK_LINES;
         }
-        
-        if(ARG(i, "-hf") || ARG(i, "--hidden"))
+        else if(ARG(i, "-hf") || ARG(i, "--hidden"))
             doptions.hide = 1;
-
-        if(ARG(i, "-s") || ARG(i, "--sort"))
+        else if(ARG(i, "-s") || ARG(i, "--sort"))
         {
             if(ARG(i + 1, "size"))
                 doptions.sort = DSIZE;
@@ -56,6 +56,19 @@ int main(int argc, char **argv)
                 doptions.sort = DALPHABETIC;
             else if(ARG(i + 1, "items"))
                 doptions.sort = DITEMS;
+        }
+        else if(ARG(i, "-i") || ARG(i, "--include"))
+            doptions.include = 1;
+        
+        else if(ARG(i, "-e") || ARG(i, "--exclude"))
+            doptions.exclude = 1;
+        
+        if(doptions.exclude || doptions.include)
+        {
+            i++;
+            while(i < argc && argv[i][0] != '-')
+                strcpy(doptions.extenstions[doptions.nexts++], argv[i++]);
+            i--;
         }
     }
 
