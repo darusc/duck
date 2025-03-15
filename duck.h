@@ -62,6 +62,7 @@ extern benchmark bench;
 typedef struct dirtree_desc
 {
     enum filetype type;
+    int hidden;
     char name[MAX_PATH];
     uint8_t length;
 } dirtree_desc;

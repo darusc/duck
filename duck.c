@@ -25,6 +25,7 @@ dirtree *dirtree_alloc(const char *name, enum filetype type, dirtree *parent)
     strcpy(node->desc.name, name);
     node->desc.length = strlen(name);
     node->desc.type = type;
+    node->desc.hidden = 0;
     node->selected_file = 0;
 
     node->nfiles = 0;
@@ -173,18 +174,21 @@ int dirtree_getpath(dirtree *tree, char *path)
  * Applies filter options on the given file.
  * @return 0 if the file should be skipped.
  */
-int filter(char *file, int isDirectory, int isHidden, duckoptions options)
+int filter(dirtree *node, duckoptions options)
 {
-    if(options.hide && isHidden)
+    if(options.hide && node->desc.hidden)
         return 0;
 
     if(options.nexts)
     {
-        if(isDirectory && options.include)
+        if(options.include && node->desc.type == DDIRECTORY)
+            return node->nfiles > 0;
+
+        if(node->desc.type == DDIRECTORY && node->nfiles == 0)
             return 0;
 
         int ext_in_list = 0;
-        const char *ext = strrchr(file, '.');
+        const char *ext = strrchr(node->desc.name, '.');
         
         if(ext != NULL)
         {
@@ -234,9 +238,6 @@ int filter(char *file, int isDirectory, int isHidden, duckoptions options)
 
             int isDirectory = dent->d_type == 4; //DT_DIR
 
-            if(!filter(dent->d_name, isDirectory, 0, options))
-                continue;
-
             sprintf(path, "%s/%s", dir, dent->d_name);
 
             stat(path, &fstat);
@@ -246,6 +247,9 @@ int filter(char *file, int isDirectory, int isHidden, duckoptions options)
 
             if(isDirectory)
                 n->size = dir_walk(path, n, options);
+
+            if(!filter(n, options))
+                continue;
 
             dirtree_insert(tree, n);
 
@@ -281,17 +285,19 @@ int filter(char *file, int isDirectory, int isHidden, duckoptions options)
 
             int isDirectory = find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 
-            if(!filter(find_data.cFileName, isDirectory, find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN, options))
-                continue;
-
             dirtree *n = dirtree_alloc(find_data.cFileName, isDirectory ? DDIRECTORY : DFILE, tree);
             n->size = find_data.nFileSizeLow;
+            n->desc.hidden = find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN;
 
             sprintf(path, "%s\\%s", dir, find_data.cFileName);
             
             // If the file is a directory recurse on it
             if(isDirectory)
                 n->size = dir_walk(path, n, options);
+
+            // if(!filter(find_data.cFileName, isDirectory, find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN, options))
+            if(!filter(n, options))
+                continue;
                 
             dirtree_insert(tree, n);
 
