@@ -23,12 +23,13 @@ int main(int argc, char **argv)
         printf("Usage:\n duck <directory> [options]\n\n");
         printf("Options:\n");
         printf(" -b,  --benchmark            Benchmark execution\n");
+        printf(" -c,  --count                Show item count\n");
+        printf(" -e,  --exclude [extensions] Exclude files with specified extensions\n");
+        printf(" -i,  --include [extensions] Include only files with specified extensions\n");
         printf(" -h,  --help                 Print this info\n");
     #ifndef __unix__
         printf(" -hf, --hidden               Ignore hidden files.\n");
     #endif
-        printf(" -i,  --include [extensions] Include only files with specified extensions\n");
-        printf(" -e,  --exclude [extensions] Exclude files with specified extensions\n");
         printf(" -s,  --sort <method>        Sort by (size is default)\n");
         printf("      methods: <size|alphabetic|items|>\n");         
         printf("\n\n");
@@ -36,7 +37,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    duioptions uioptions = {1, 2};
+    duioptions uioptions = {1, 2, 0};
     duckoptions doptions = {0 ,0, DSIZE, 0, 0, 0};
 
     for(int i = 2; i < argc; i++)
@@ -47,7 +48,9 @@ int main(int argc, char **argv)
             uioptions.y = BENCHMARK_LINES;
         }
         else if(ARG(i, "-hf") || ARG(i, "--hidden"))
+        {
             doptions.hide = 1;
+        }
         else if(ARG(i, "-s") || ARG(i, "--sort"))
         {
             if(ARG(i + 1, "size"))
@@ -58,10 +61,17 @@ int main(int argc, char **argv)
                 doptions.sort = DITEMS;
         }
         else if(ARG(i, "-i") || ARG(i, "--include"))
+        {
             doptions.include = 1;
-        
+        }
         else if(ARG(i, "-e") || ARG(i, "--exclude"))
+        {
             doptions.exclude = 1;
+        }
+        else if(ARG(i, "-c") || ARG(i, "--count"))
+        {
+            uioptions.count = 1;
+        }
         
         if(doptions.exclude || doptions.include)
         {

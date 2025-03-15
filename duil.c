@@ -77,13 +77,9 @@ void dui_print(dirtree *tree)
 
     char out[310] = "";
     char sz[10];
-
-    char path[310] = "";
-    dirtree_getpath(tree, path);
     
-    size((double)tree->size, sz);
-    
-    mvprintw(options.y, 0, "%9s %s", sz, path);
+    dui_tree_root_to_string(tree, out, options);
+    mvprintw(options.y, 0, "%s", out);
 
     for(int i = 0 + scrollOffset; i < tree->nfiles; i++)
     {
@@ -98,7 +94,8 @@ void dui_print(dirtree *tree)
         if(i == tree->selected_file)
             attron(COLOR_PAIR(1));
         
-        mvprintw(options.y + i - scrollOffset + 1, 0, "%9s %5.2lf%% [%-15.*s] %s%c", sz, percent * 100, MAX((int)round(percent * 15), 1), loadChars, d->desc.name, d->desc.type == DDIRECTORY ? '/' :  ' ');
+        dui_tree_child_to_string(d, tree, out, options);
+        mvprintw(options.y + i - scrollOffset + 1, 0, "%s", out);
         
         // Disable color
         attroff(COLOR_PAIR(1));

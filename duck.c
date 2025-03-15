@@ -164,7 +164,11 @@ int dirtree_getpath(dirtree *tree, char *path)
         return 0;
     
     int l = dirtree_getpath(tree->parent, path);
-    strcat(path, tree->desc.name);
+    
+    if(tree->parent == NULL)
+        strcpy(path, tree->desc.name);
+    else
+        strcat(path, tree->desc.name);
     strcat(path, "/");
 
     return l + tree->desc.length + 1;

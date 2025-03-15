@@ -4,6 +4,7 @@
 #include "duck.h"
 
 #include <stdio.h>
+#include <math.h>
 
 #ifdef __unix__
     #include <ncurses.h>
@@ -30,7 +31,7 @@
 
 static const char headerMsg[] = " duck ~ Use arrow keys to navigate, backspace - go to parent directory, enter - go to child directory";
 
-static const char loadChars[15] = {219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219};
+static const char loadChars[16] = {219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 0};
 
 typedef struct duioptions 
 {
@@ -45,6 +46,11 @@ typedef struct duioptions
      * Y coord to start drawing UI from
      */
     int y;
+
+    /**
+     * Show item count
+     */
+    int count;
 } duioptions;
 
 void dui_init(duioptions options);
@@ -65,6 +71,35 @@ static inline void dui_benchmark_print(benchmark bench)
         printf("Discovery time: %.3lf sec\n", bench.dtime);
         printf("Total time: %.3lf sec\n", bench.dtime);
     #endif
+}
+
+static inline void dui_tree_root_to_string(dirtree *root, char *str, duioptions options)
+{
+    static char sz[10];
+    char path[300] = "";
+    dirtree_getpath(root, path);
+    
+    size((double)root->size, sz);
+
+    if(options.count)
+        sprintf(str, "%9s        items: %6d %s", sz, root->nfiles, path);
+    else
+        sprintf(str, "%9s %s", sz, path);
+}
+
+static inline void dui_tree_child_to_string(dirtree *node, dirtree *parent, char *str, duioptions options)
+{
+    static char sz[10];
+
+    // Space percentage for the current file
+    double percent = (node->size * 1.0) / parent->size;
+        
+    size((double)node->size, sz);
+
+    if(options.count)
+        sprintf(str, "%9s %5.2lf%% items: %6d [%-15.*s] %s%c", sz, percent * 100, node->nfiles, (int)round(percent * 15), loadChars, node->desc.name, node->desc.type == DDIRECTORY ? '/' :  ' ');
+    else
+        sprintf(str, "%9s %5.2lf%% [%-15.*s] %s%c", sz, percent * 100, (int)round(percent * 15), loadChars, node->desc.name, node->desc.type == DDIRECTORY ? '/' :  ' ');
 }
 
 /**

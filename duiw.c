@@ -94,14 +94,9 @@ void dui_print(dirtree *tree)
     COORD coord = {0, options.y};
 
     char out[300] = "";
-    char sz[10];
-    
+
     // Print the size and current director path on the first line
-    char path[300] = "";
-    dirtree_getpath(tree, path);
-    
-    size((double)tree->size, sz);
-    sprintf(out, "%9s %s", sz, path);
+    dui_tree_root_to_string(tree, out, options);
 
     int len = strlen(out);
     WriteConsoleOutputCharacterA(hConsole, out, len, coord, &bytes);
@@ -112,11 +107,7 @@ void dui_print(dirtree *tree)
 
         coord.Y = options.y + (short)i - scrollOffset + 1;
         
-        // Space percentage for the current file
-        double percent = (d->size * 1.0) / tree->size;
-        
-        size((double)d->size, sz);
-        sprintf(out, "%9s %5.2lf%% [%-15.*s] %s%c", sz, percent * 100, (int)round(percent * 15), loadChars, d->desc.name, d->desc.type == DDIRECTORY ? '/' :  ' ');
+        dui_tree_child_to_string(d, tree, out, options);
         
         len = strlen(out);
 
