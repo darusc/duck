@@ -34,6 +34,8 @@ dirtree *dirtree_alloc(const char *name, enum filetype type, dirtree *parent)
     node->capacity = 20;
     node->files = NULL;
     node->parent = parent;
+
+    return node;
 }
 
 void dirtree_insert(dirtree *root, dirtree* node)
