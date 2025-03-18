@@ -4,8 +4,10 @@
 #include <stdint.h>
 
 #ifdef __unix__
-    #define MAX_PATH 260
+    #include <linux/limits.h>
     #include <sys/types.h>
+
+    #define MAX_PATH PATH_MAX
 #else
     #include <windows.h>
 #endif 
