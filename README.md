@@ -109,4 +109,4 @@ External dependencies are kept to a minimum. The windows version uses only the w
 
 To build duck use the provided makefile.
 
-The project is modular (only the terminal ui is platform specifc), `duiw.c` contains the UI implementation for win32 platforms and `duil.c` contains the UI implementation for unix based platforms. 
+The project is modular (only the terminal ui is platform specific), `duiw.c` contains the UI implementation for win32 platforms and `duil.c` contains the UI implementation for unix based platforms. 
