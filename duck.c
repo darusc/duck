@@ -227,7 +227,7 @@ int filter(dirtree *node, duckoptions options)
     size_t dir_walk(const char *dir, dirtree *tree, duckoptions options)
     {
         char path[MAX_PATH];
-
+        
         // Return if the current path is invalid
         DIR *d = opendir(dir);
         if(d == NULL)
@@ -244,7 +244,7 @@ int filter(dirtree *node, duckoptions options)
 
             int isDirectory = dent->d_type == 4; //DT_DIR
 
-            sprintf(path, "%s/%s", dir, dent->d_name);
+            snprintf(path, MAX_PATH, "%s/%s", dir, dent->d_name);
 
             stat(path, &fstat);
 
@@ -295,7 +295,7 @@ int filter(dirtree *node, duckoptions options)
             n->size = find_data.nFileSizeLow;
             n->desc.hidden = find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN;
 
-            sprintf(path, "%s\\%s", dir, find_data.cFileName);
+            snprintf(path, MAX_PATH, "%s\\%s", dir, find_data.cFileName);
             
             // If the file is a directory recurse on it
             if(isDirectory)
