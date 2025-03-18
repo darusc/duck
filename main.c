@@ -108,6 +108,7 @@ int main(int argc, char **argv)
                 return 0;
 
             case DUCK_DOWN:
+            case 'j':  // Vim-style down
                 if(dirtree_select_next_file(root))
                 {
                     clrmode = dui_scroll_down();
@@ -115,6 +116,7 @@ int main(int argc, char **argv)
                 break;
 
             case DUCK_UP:
+            case 'k':  // Vim-style up
                 if(dirtree_select_prev_file(root))
                 {
                     clrmode = dui_scroll_up();
