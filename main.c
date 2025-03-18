@@ -123,10 +123,12 @@ int main(int argc, char **argv)
                 }
                 break;
 
+            case 'l': // Vim-style child
             case DUCK_ENTER:
                 clrmode = dirtree_down(&root) * (CLEAR_ALL | CLEAR_CURSOR_OFFSET);
                 break;
 
+            case 'h': // Vim-style parent
             case DUCK_BACK:
                 clrmode = dirtree_up(&root) * (CLEAR_ALL | CLEAR_CURSOR_OFFSET);
                 break;
