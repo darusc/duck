@@ -14,6 +14,16 @@ DUCK is a cross-platform interactive terminal-based disk analysis tool and file 
 
 <img center src="imgs/duck.gif">
 
+## Installation
+
+To install duck on Linux:
+
+```bash
+make && sudo make install
+```
+
+This will compile the program and install it to `/usr/local/bin`.
+
 ## Usage
 
 ```
